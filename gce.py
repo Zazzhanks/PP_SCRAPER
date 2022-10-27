@@ -65,6 +65,18 @@ def downloader(PDF_NAME, PDF_LINK):
     except Exception:
         print('Cannot download the PDF {}'.format(PDF_NAME))
 
+def fetch_subject_list():
+    subject_dict = {}
+    r = requests.get('https://papers.gceguide.com/A%20Levels/')
+    soup = BeautifulSoup(r.text, 'lxml')
+    
+    for link in soup.find_all('a', class_='name'):
+        
+        sub_code = re.findall('\(([^)]+)\)',link.text)[-1]
+        sub_name = link.text.split('(')[0]
+        subject_dict.update({sub_name:sub_code})
+    print(subject_dict)
+
 
 
 def main():
