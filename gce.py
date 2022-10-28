@@ -5,7 +5,7 @@ import requests
 import multiprocessing
 from functools import partial
 from bs4 import BeautifulSoup
-
+import re
 SUBJECT = {
     'CHEMISTRY': 'https://papers.gceguide.com/A%20Levels/Chemistry%20(9701)/',
     'PHYSICS':   'https://papers.gceguide.com/A%20Levels/Physics%20(9702)/',
@@ -14,6 +14,32 @@ SUBJECT = {
     'EGP':       'https://papers.gceguide.com/A%20Levels/English%20General%20Paper%20(AS%20Level%20only)%20(8021)/',
     'F-MATH':    'https://papers.gceguide.com/A%20Levels/Mathematics%20-%20Further%20(9231)/'
 }
+
+
+def fetch_subject_list():
+    subject_dict = {}
+    r = requests.get('https://papers.gceguide.com/A%20Levels/')
+    soup = BeautifulSoup(r.text, 'lxml')
+    for link in soup.find_all('a', class_='name'): 
+        sub_code = re.findall('\(([^)]+)\)',link.text)[-1]
+        sub_name = link.text
+        subject_dict.update({sub_code:sub_name})
+    print(subject_dict)
+    return subject_dict
+# fetch_subject_list()
+
+def return_subject_url(subject_code:int):
+    sub_dict = fetch_subject_list() 
+    if sub_dict[f'{subject_code}'] is not None:
+        url = 'https://papers.gceguide.com/A%20Levels/' + sub_dict[f'{subject_code}'].replace(' ', '%20')
+    else:
+        print("Enter a Valid Subject Code")
+    print(url)
+
+# return_subject_url(9702)
+    
+
+
 
 PAPER_TERMS = {
     'qp':'QP',
@@ -38,11 +64,9 @@ def make_folder(Year,folder_name):
             os.chdir(Year)
         else:
             os.chdir(Year)
-            
             if not os.path.exists(folder_name):
                 os.mkdir(PAPER_TERMS[f'{folder_name}'])
                 os.chdir(PAPER_TERMS[f'{folder_name}'])
-            
             else:    
             
                 os.chdir(PAPER_TERMS[f'{folder_name}'])
@@ -50,7 +74,6 @@ def make_folder(Year,folder_name):
     return os.getcwd()
 
 def downloader(PDF_NAME, PDF_LINK):
-    
     try:
         with open(PDF_NAME, 'r') as pdf:
             print('File is already there')
@@ -64,19 +87,6 @@ def downloader(PDF_NAME, PDF_LINK):
             return 0
     except Exception:
         print('Cannot download the PDF {}'.format(PDF_NAME))
-
-def fetch_subject_list():
-    subject_dict = {}
-    r = requests.get('https://papers.gceguide.com/A%20Levels/')
-    soup = BeautifulSoup(r.text, 'lxml')
-    
-    for link in soup.find_all('a', class_='name'):
-        
-        sub_code = re.findall('\(([^)]+)\)',link.text)[-1]
-        sub_name = link.text.split('(')[0]
-        subject_dict.update({sub_name:sub_code})
-    print(subject_dict)
-
 
 
 def main():
@@ -114,4 +124,5 @@ def main():
 
             
 if __name__ == '__main__':
-	main()
+	# main()
+    pass
